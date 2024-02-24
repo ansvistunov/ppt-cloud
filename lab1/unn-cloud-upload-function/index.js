@@ -2,9 +2,9 @@ const parseMultipart = require('parse-multipart');
 const { S3Client, GetObjectCommand, PutObjectCommand } = require("@aws-sdk/client-s3");
 
 function extractFile(event) {
-  const boundary = parseMultipart.getBoundary(event.headers['Content-Type']);
+  const boundary = parseMultipart.getBoundary(event.headers['Content-Type'])
   const parts = parseMultipart.Parse(Buffer.from(event.body, 'base64'), boundary);
-  const [{ filename, data }] = parts;
+  const [{ filename, data }] = parts
   return {
     filename,
     data
@@ -13,6 +13,7 @@ function extractFile(event) {
 
 async function putObject(data, name) {
   const REGION = "ru-central1";
+  const folder = "upload/";
   const ENDPOINT = "https://storage.yandexcloud.net";
   const s3Client = new S3Client({
     region: REGION, endpoint: ENDPOINT, credentials: {
@@ -21,7 +22,7 @@ async function putObject(data, name) {
     }
   });
   const bucket = process.env.bucket;
-  const params = { Bucket: bucket, Key: name, Body: data };
+  const params = { Bucket: bucket, Key: folder + name, Body: data };
   const results = await s3Client.send(new PutObjectCommand(params));
   return results;
 }
