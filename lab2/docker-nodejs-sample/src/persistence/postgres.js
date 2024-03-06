@@ -11,6 +11,8 @@ const {
     POSTGRES_PASSWORD_FILE: PASSWORD_FILE,
     POSTGRES_DB: DB,
     POSTGRES_DB_FILE: DB_FILE,
+    SECTION: SECTION, 
+    POSTGRES_PORT: POSTGRES_PORT,
 } = process.env;
 
 let client;
@@ -20,10 +22,11 @@ async function init() {
     const user = USER_FILE ? fs.readFileSync(USER_FILE) : USER;
     const password = PASSWORD_FILE ? fs.readFileSync(PASSWORD_FILE, 'utf8') : PASSWORD;
     const database = DB_FILE ? fs.readFileSync(DB_FILE) : DB;
+    const postgres_port = parseInt(POSTGRES_PORT) || 5432;
 
     await waitPort({ 
         host, 
-        port: 5432,
+        port: postgres_port,
         timeout: 10000,
         waitForDns: true,
     });
@@ -32,14 +35,15 @@ async function init() {
         host,
         user,
         password,
-        database
+        database,
+        port: postgres_port
     });
 
     return client.connect().then(async () => {
-        console.log(`Connected to postgres db at host ${HOST}`);
+        console.log(`Connected to postgres db at host ${host}`);
         // Run the SQL instruction to create the table if it does not exist
-        await client.query('CREATE TABLE IF NOT EXISTS todo_items (id varchar(36), name varchar(255), completed boolean)');
-        console.log('Connected to db and created table todo_items if it did not exist');
+        //await client.query('CREATE TABLE IF NOT EXISTS todo_items (id varchar(36), name varchar(255), completed boolean)');
+        //console.log('Connected to db and created table todo_items if it did not exist');
     }).catch(err => {
         console.error('Unable to connect to the database:', err);
     });
