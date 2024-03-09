@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: ns
+  name: lab-k8s-$STUDENT
+  labels:
+    app: lab-k8s-$STUDENT
+spec:
+  ports:
+    - port: 80
+      name: plaintext
+      targetPort: 3000
+  selector:
+    app: lab-k8s-$STUDENT
+  type: LoadBalancer

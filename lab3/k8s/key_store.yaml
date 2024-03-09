@@ -1,0 +1,11 @@
+apiVersion: external-secrets.io/v1alpha1
+kind: SecretStore
+metadata:
+  name: secret-store
+spec:
+  provider:
+    yandexlockbox:
+      auth:
+        authorizedKeySecretRef:
+          name: yc-auth
+          key: authorized-key
