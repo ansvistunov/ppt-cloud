@@ -5,11 +5,11 @@ const fs = require("fs");
 let client;
 
 async function init(params) {
-    const host = params.host;
-    const user = params.user
-    const password = params.password
-    const database = params.db
-    const postgres_port = params.port;
+    const host = params.POSTGRES_HOST;
+    const user = params.POSTGRES_USER
+    const password = params.POSTGRES_PASSWORD
+    const database = params.POSTGRES_DB
+    const postgres_port = params.POSTGRES_PORT;
 
     client = new Client({
         host,
