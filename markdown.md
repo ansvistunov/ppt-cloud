@@ -2,3 +2,4 @@
 
 * [Введение](./course/intro)
 * [Яндекс.Облако. Обзор](./course/ycloud-intro/)
+* [Элементарное введение в оркестраторы](./course/orchestration/)
