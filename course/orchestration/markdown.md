@@ -299,8 +299,244 @@ Kubernetes также содержит абстракции более высо�
 - ConfigMaps: абстракция над файлами конфигурации, позволяет разделять настройки приложения и сами контейнеры, избавляя от необходимости упаковывать конфиги в docker-образ.
 ---
 ### Развертывание приложений
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lab-demo-svistunov #имя приложения
+  labels:
+    app-label: unn-cloud-k8s-app-svistunov # метка
+  namespace: ns # namespace, в котором будут создаваться объекты
+spec:
+  replicas: 3 # кол-во экземпляров, которое будет запущено
+  selector:
+    matchLabels:
+      app-label: unn-cloud-k8s-app-svistunov # метка
+  template:
+    metadata:
+      labels:
+        app-label: unn-cloud-k8s-app-svistunov # метка
+    spec:
+      containers:
+      - name: unn-cloud-k8s-app-svistunov
+      # имя образа, из которого будет строиться приложение
+        image: cr.yandex/$REGISTRY_ID/docker-nodejs-sample-server:latest
+        env: # переменные окружения
+        - name: SECTION
+          value: k8s-test
+        - name: POSTGRES_HOST
+          valueFrom: # в данном случае значение берется из секрета
+            secretKeyRef: 
+              name: k8s-secret 
+              key: POSTGRES_HOST 
+```
 ---
+### Публикация приложений (LoadBalancer)
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: ns # namespace, в котором будут создаваться объекты
+  name: lab-demo-svistunov
+  labels:
+  # метка. должна соответствовать метке в Deployment
+    app-label: unn-cloud-k8s-app-svistunov 
+spec:
+  ports:
+    - port: #<свой порт, который смотрит наружу>
+      name: plaintext
+      targetPort: 3000
+  selector:
+  # метка. должна соответствовать метке в Deployment
+    app-label: unn-cloud-k8s-app-svistunov
+  type: LoadBalancer # тип сервиса - LoadBalancer
+```
+---
+### Некоторые команды
+```bash
+# развертывание элементов приложения
+kubectl apply -f <файл конфигурации>
 
+# проброс локального порта в контейнер
+kubectl port-forward <pod-name> 8080:8080
+
+# получить список подов в текущем пространстве имен
+kubectl get pods
+# получить список подов в пространстве имен ns
+kubectl  get pods -n ns
+
+# получить список сервисов в пространстве имен ns
+kubectl get svc -n ns
+
+# получить список deployments в пространстве имен ns
+kubectl get deployments -n ns
+
+# удаление сервиса alb-demo-1 в пространстве имен default
+kubectl delete service alb-demo-1 -n default
+
+# удаление deployment alb-demo-2 в пространстве имен default
+kubectl delete deployment alb-demo-2 -n default
+```
+---
+### Некоторые команды
+```bash
+# последовательно перезагрузить все поды приложения lab-demo-svistunov
+kubectl -n ns rollout restart deployment/lab-demo-svistunov
+# выполнить в поде lab-demo-svistunov-xxx команду ls -la
+kubectl --namespace ns exec lab-demo-svistunov-xxx -- ls -la
+# просмотреть логи пода lab-demo-xxx
+kubectl logs lab-demo-xxx
+
+# получить список сервисов ingress в пространстве имен app
+kubectl get ingress -n app
+
+# Получить описание сервиса
+kubectl describe service <имя сервиса>
+
+# Получить описание deployment
+kubectl describe deployment <имя deployment>
+
+```
+---
+### Deployment
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unn-cloud-k8s-app-svistunov-v3
+  labels:
+    app: unn-cloud-k8s-app-svistunov-v3
+  namespace: ns
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: unn-cloud-k8s-app-svistunov-v3
+  template:
+    metadata:
+      labels:
+        app: unn-cloud-k8s-app-svistunov-v3
+    spec:
+      containers:
+      - name: unn-cloud-k8s-app-svistunov-v3
+        image: cr.yandex/$REGISTRY_ID/todo-app-with-stop:latest
+        env:
+        - name: PORT
+          value: "3000"
+        - name: SECTION
+          value: k8s-test-v3
+        - name: POSTGRES_HOST
+          valueFrom:
+            secretKeyRef:
+              name: k8s-secret
+              key: POSTGRES_HOST
+        - name: POSTGRES_PORT
+          valueFrom:
+            secretKeyRef:
+              name: k8s-secret
+              key: POSTGRES_PORT
+        - name: POSTGRES_DB
+          valueFrom:
+            secretKeyRef:
+              name: k8s-secret
+              key: POSTGRES_DB
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: k8s-secret
+              key: DBUSER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: k8s-secret
+              key: DBPASSWORD
+```
+---
+### Публикация через Ingress
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: unn-cloud-k8s-app-svistunov-v3
+spec:
+  selector:
+    app: unn-cloud-k8s-app-svistunov-v3
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+      protocol: TCP
+```
+---
+### Публикация через Ingress (роутинг по имени сервера)
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: yc-clusterissuer
+  name: ingress-serviced
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - app4.nginx.ansvistunov.ru
+      secretName: example-com-secret
+  rules:
+    - host: app4.nginx.ansvistunov.ru
+      http:
+        paths:
+          - backend:
+              service:
+                name: unn-cloud-k8s-app-svistunov-v3
+                port:
+                  number: 3000
+            path: /
+            pathType: Prefix
+```
+---
+### Публикация через Ingress (роутинг по пути)
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: yc-clusterissuer
+  name: ingress
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - app.nginx.ansvistunov.ru
+      secretName: example-com-secret
+  rules:
+    - host: app.nginx.ansvistunov.ru
+      http:
+        paths:
+          - backend:
+              service:
+                name: alb-demo-1
+                port:
+                  number: 80
+            path: /app1
+            pathType: Prefix
+          - backend:
+              service:
+                name: alb-demo-2
+                port:
+                  number: 80
+            path: /app2
+            pathType: Prefix
+          - backend:
+              service:
+                name: alb-demo-2
+                port:
+                  name: http
+            path: /
+            pathType: Prefix
+```
+---
 
 
 
