@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: ns
+  annotations:
+    cert-manager.io/cluster-issuer: yc-clusterissuer
+  name: ingress-$STUDENT
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - $STUDENT.nginx.cloud-course.ru
+      secretName: $STUDENT-secret
+  rules:
+    - host: $STUDENT.nginx.cloud-course.ru
+      http:
+        paths:
+          - backend:
+              service:
+                name: lab-k8s-$STUDENT
+                port:
+                  number: 3000
+            path: /
+            pathType: Prefix

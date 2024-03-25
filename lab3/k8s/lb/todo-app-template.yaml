@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lab-k8s-$STUDENT
+  labels:
+    app: lab-k8s-$STUDENT
+  namespace: ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lab-k8s-$STUDENT
+  template:
+    metadata:
+      labels:
+        app: lab-k8s-$STUDENT
+    spec:
+      containers:
+      - name: lab-k8s-$STUDENT
+        image: cr.yandex/$REGISTRY_ID/todo-app-with-stop:latest
+        env:
+        - name: SECTION
+          value: k8s-test-1
+        - name: POSTGRES_HOST
+          valueFrom: 
+            secretKeyRef: 
+              name: k8s-secret 
+              key: POSTGRES_HOST 
+        - name: POSTGRES_PORT
+          valueFrom: 
+            secretKeyRef: 
+              name: k8s-secret 
+              key: POSTGRES_PORT
+        - name: POSTGRES_DB
+          valueFrom: 
+            secretKeyRef: 
+              name: k8s-secret 
+              key: POSTGRES_DB
+        - name: POSTGRES_USER
+          valueFrom: 
+            secretKeyRef: 
+              name: k8s-secret 
+              key: DBUSER
+        - name: POSTGRES_PASSWORD
+          valueFrom: 
+            secretKeyRef: 
+              name: k8s-secret 
+              key: DBPASSWORD        
