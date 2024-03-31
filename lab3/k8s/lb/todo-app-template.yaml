@@ -20,7 +20,7 @@ spec:
         image: cr.yandex/$REGISTRY_ID/todo-app-with-stop:latest
         env:
         - name: SECTION
-          value: k8s-test-1
+          value: k8s-$STUDENT
         - name: POSTGRES_HOST
           valueFrom: 
             secretKeyRef: 
