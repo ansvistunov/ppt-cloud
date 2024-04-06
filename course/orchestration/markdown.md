@@ -396,6 +396,9 @@ kubectl describe service <имя сервиса>
 # Получить описание deployment
 kubectl describe deployment <имя deployment>
 
+#отмасштабировать до 4 экземпляров
+kubectl scale deployments/<имя deployment> --replicas=4
+
 ```
 ---
 ### Deployment
