@@ -23,6 +23,14 @@ afterAll(async () =>{
 })
 
 
+function clearItemsNames(data){
+    return data.map(row => ({
+        id: row.id,
+        name: row.name.replace(/\s\((\w+.)+/g,''),
+        completed: row.completed
+      }));
+}
+
 
 describe.each(records)('test servless containers', (group, student, section, url)=>{
     const axiosConfig = {
@@ -54,6 +62,7 @@ describe.each(records)('test servless containers', (group, student, section, url
             await db.deleteAllForSection(section);
             await db.storeItem(item, section);
             const {data, status} = await axiosAPIClient.get("/items");
+            data = clearItemsNames(data);
             expect(data.length).toBe(1);
             expect({
                 data,
@@ -161,6 +170,7 @@ describe.each(records)('test servless containers', (group, student, section, url
             }
 
             const {data} = await axiosAPIClient.get(`/items`);
+            data = clearItemsNames(data);
             expect(data.length).toBe(items.length);
             expect({
                 data,
