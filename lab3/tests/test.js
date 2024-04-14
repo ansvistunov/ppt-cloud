@@ -61,7 +61,7 @@ describe.each(records)('test servless containers', (group, student, section, url
             }
             await db.deleteAllForSection(section);
             await db.storeItem(item, section);
-            const {data, status} = await axiosAPIClient.get("/items");
+            let {data, status} = await axiosAPIClient.get("/items");
             data = clearItemsNames(data);
             expect(data.length).toBe(1);
             expect({
@@ -169,7 +169,7 @@ describe.each(records)('test servless containers', (group, student, section, url
                 await db.storeItem(item, section);
             }
 
-            const {data} = await axiosAPIClient.get(`/items`);
+            let {data} = await axiosAPIClient.get(`/items`);
             data = clearItemsNames(data);
             expect(data.length).toBe(items.length);
             expect({
