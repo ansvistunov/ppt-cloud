@@ -161,6 +161,7 @@ describe.each(records)('test servless containers', (group, student, section, url
             }
 
             const {data} = await axiosAPIClient.get(`/items`);
+            data.sort((a, b) => a.id.localeCompare(b.id));
             expect(data.length).toBe(items.length);
             expect({
                 data,
