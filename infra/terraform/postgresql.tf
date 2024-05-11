@@ -1,16 +1,17 @@
 resource "yandex_mdb_postgresql_cluster" "postgresql" {
 
   depends_on = [
-    yandex_vpc_network.course-network,
-    yandex_vpc_subnet.course-subnet,
-    yandex_vpc_security_group.pgsql-sg
+    yandex_vpc_network.k8s-network,
+    yandex_vpc_subnet.subnet-a,
+    yandex_vpc_security_group.k8s-main-sg
+
   ]
 
   folder_id = data.yandex_resourcemanager_folder.folder.folder_id
   name                = "PostgreSQL"
   environment         = "PRODUCTION"
-  network_id          = yandex_vpc_network.course-network.id
-  security_group_ids  = [ yandex_vpc_security_group.pgsql-sg.id ]
+  network_id          = yandex_vpc_network.k8s-network.id
+  security_group_ids  = [ yandex_vpc_security_group.k8s-main-sg.id ]
 //  deletion_protection = true
 
   config {
@@ -35,8 +36,8 @@ resource "yandex_mdb_postgresql_cluster" "postgresql" {
 
   host {
     zone      = "ru-central1-a"
-    name      = "pg-host-a"
-    subnet_id = yandex_vpc_subnet.course-subnet.id
+    name      = var.postgres_port
+    subnet_id = yandex_vpc_subnet.subnet-a.id
   }
 }
 
@@ -45,18 +46,18 @@ resource "yandex_mdb_postgresql_database" "db1" {
     yandex_mdb_postgresql_user.user1
   ]
   cluster_id = yandex_mdb_postgresql_cluster.postgresql.id
-  name       = "db1"
-  owner      = "db_user"
+  name       = var.postgres_db
+  owner      = var.db_user
 }
 
 resource "yandex_mdb_postgresql_user" "user1" {
   cluster_id = yandex_mdb_postgresql_cluster.postgresql.id
-  name       = "db_user"
-  password   = "useruser"
+  name       = var.db_user
+  password   = var.db_password
   conn_limit = 600
 }
 
-resource "yandex_vpc_network" "course-network" {
+/*resource "yandex_vpc_network" "course-network" {
   name = "course-network"
   folder_id = data.yandex_resourcemanager_folder.folder.folder_id
 }
@@ -81,4 +82,4 @@ resource "yandex_vpc_security_group" "pgsql-sg" {
     protocol       = "TCP"
     v4_cidr_blocks = [ "0.0.0.0/0" ]
   }
-}
+}*/

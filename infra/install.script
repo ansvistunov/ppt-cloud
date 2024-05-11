@@ -1,0 +1,1 @@
+sudo apt-get update && sudo apt install curl && sudo apt install docker -y && sudo apt install docker-compose -y && sudo apt install mc -y && sudo apt install snapd -y && sudo snap install kubectl --classic && sudo apt-get install -y postgresql-client
