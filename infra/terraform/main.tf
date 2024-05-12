@@ -1,8 +1,3 @@
-variable "yc_token" {
-  type = string
-  description = "Yandex Cloud API key"
-}
-
 variable "yc_cloud_id" {
   type = string
   description = "Yandex Cloud id"
@@ -16,11 +11,6 @@ variable "yc_folder_id" {
 variable "db_user" {
   type = string
   description = "user, created in db"
-}
-
-variable "db_password" {
-  type = string
-  description = "password for db user"
 }
 
 variable "postgres_port" {
@@ -38,8 +28,15 @@ variable "postgres_db" {
   description = "database name"
 }
 
+variable "nginx_domain" {
+  type = string
+  description = "public domain, used for nginx "
+}
 
-
+variable "cert_email" {
+  type = string
+  description = "email for let`sEncrypt certificates"
+}
 
 
 terraform {
@@ -53,7 +50,7 @@ terraform {
 
 provider "yandex" {
   zone = "ru-central1-a"
-  token     = var.yc_token
+  //token     = var.yc_token
   cloud_id  = var.yc_cloud_id
   folder_id = var.yc_folder_id
 }
@@ -70,4 +67,7 @@ output "docker-server-name" {
   value = yandex_compute_instance.docker-server.name
 }
 
+output "cert-email" {
+  value = var.cert_email
+}
 

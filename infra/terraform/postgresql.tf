@@ -1,10 +1,14 @@
+resource "random_password" "db_password" {
+  length           = 10
+  special          = false
+}
+
 resource "yandex_mdb_postgresql_cluster" "postgresql" {
 
   depends_on = [
     yandex_vpc_network.k8s-network,
     yandex_vpc_subnet.subnet-a,
     yandex_vpc_security_group.k8s-main-sg
-
   ]
 
   folder_id = data.yandex_resourcemanager_folder.folder.folder_id
@@ -53,33 +57,7 @@ resource "yandex_mdb_postgresql_database" "db1" {
 resource "yandex_mdb_postgresql_user" "user1" {
   cluster_id = yandex_mdb_postgresql_cluster.postgresql.id
   name       = var.db_user
-  password   = var.db_password
+  password   = random_password.db_password.result
   conn_limit = 600
 }
 
-/*resource "yandex_vpc_network" "course-network" {
-  name = "course-network"
-  folder_id = data.yandex_resourcemanager_folder.folder.folder_id
-}
-
-resource "yandex_vpc_subnet" "course-subnet" {
-  folder_id = data.yandex_resourcemanager_folder.folder.folder_id
-  name           = "course-subnet"
-  zone           = "ru-central1-a"
-  network_id     = yandex_vpc_network.course-network.id
-  v4_cidr_blocks = ["10.5.0.0/24"]
-
-}
-
-resource "yandex_vpc_security_group" "pgsql-sg" {
-  folder_id = data.yandex_resourcemanager_folder.folder.folder_id
-  name       = "pgsql-sg"
-  network_id = yandex_vpc_network.course-network.id
-
-  ingress {
-    description    = "PostgreSQL"
-    port           = 6432
-    protocol       = "TCP"
-    v4_cidr_blocks = [ "0.0.0.0/0" ]
-  }
-}*/

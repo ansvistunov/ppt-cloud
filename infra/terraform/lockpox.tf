@@ -42,23 +42,23 @@ resource "yandex_lockbox_secret_version" "postgres_secret_version_1" {
 
   entries {
     key        = "DBUSER"
-    text_value = var.db_user // explicit secret value
+    text_value = var.db_user // DBUSER
   }
   entries {
     key        = "DBPASSWORD"
-    text_value = var.db_password // explicit secret value
+    text_value = random_password.db_password.result // DBPASSWORD
   }
   entries {
     key        = "POSTGRES_HOST"
-    text_value = yandex_mdb_postgresql_cluster.postgresql.host[0].fqdn // explicit secret value
+    text_value = yandex_mdb_postgresql_cluster.postgresql.host[0].fqdn // POSTGRES_HOST (full name)
   }
   entries {
     key        = "POSTGRES_PORT"
-    text_value = var.postgres_port // explicit secret value
+    text_value = var.postgres_port // POSTGRES_PORT
   }
   entries {
     key        = "POSTGRES_DB"
-    text_value = var.postgres_db // explicit secret value
+    text_value = var.postgres_db // POSTGRES_DB
   }
 }
 
@@ -83,7 +83,8 @@ output "postgres-user" {
   value = var.db_user
 }
 output "postgres-password" {
-  value = var.db_password
+  value = random_password.db_password.result
+  sensitive = true
 }
 
 output "postgres-db" {
